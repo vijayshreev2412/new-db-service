@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  news-db-app:
+    build: .
+    ports:
+      - "5001:5001"
+    environment:
+      - DD_SERVICE=news-db-service
+      - DD_ENV=prod
+      - DD_VERSION=1.0
+      - DD_AGENT_HOST=datadog-agent
+      - DB_PATH=/app/news.db
+    volumes:
+      - ./news.db:/app/news.db
+    depends_on:
+      - datadog-agent
+
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    ports:
+      - "8126:8126"
